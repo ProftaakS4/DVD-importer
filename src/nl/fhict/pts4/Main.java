@@ -22,13 +22,16 @@ public class Main {
 
     }
 
-    public static String PATH = "/mnt/iso";
+    public static String DVD_PATH = "/mnt/iso";
+    public static String STORAGE_PATH = "/tmp/dvds";
 
     public static List<Photo> photos = new ArrayList<>();
 
     public static void main(String[] args) {
 
-        File[] files = new File(PATH).listFiles();
+        // Register DVD with the website
+
+        File[] files = new File(DVD_PATH).listFiles();
 
         // Loop through all files
         for (File rootfile : files) {

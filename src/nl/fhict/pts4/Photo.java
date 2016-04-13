@@ -21,8 +21,6 @@ public class Photo {
     public static final int THUMBNAIL_WIDTH = 300;
     public static final int THUMBNAIL_HEIGHT = 300;
 
-    public static final String FILEPATH = "/tmp/dvds/";
-
     Photo(File file) {
         this.file = file;
     }
@@ -63,13 +61,14 @@ public class Photo {
     private void createThumbnail() throws IOException {
         BufferedImage bimg = ImageIO.read(file);
 
-        Image thumb;
-        thumb = bimg.getScaledInstance(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, Image.SCALE_SMOOTH);
+        BufferedImage thumb;
+        thumb = (BufferedImage) bimg.getScaledInstance(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, Image.SCALE_SMOOTH);
 
         String folder = file.getParent();
         String[] filename = file.getName().split(".");
 
-        this.thumbnail = new File("");
+        this.thumbnail = new File(folder + "/thumb_"+filename[0]+".png");
+        ImageIO.write(thumb, "png",this.thumbnail);
     }
 
     public File getThumbnail() throws IOException {
