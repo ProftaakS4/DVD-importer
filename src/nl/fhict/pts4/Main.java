@@ -1,7 +1,6 @@
 package nl.fhict.pts4;
 
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.List;
 public class Main {
 
     public static void printFile(File fn) {
-
         Photo photo = new Photo(fn);
 
         try {
@@ -19,7 +17,6 @@ public class Main {
             System.err.println("Can't read "+fn.getPath());
             e.printStackTrace();
         }
-
     }
 
     public static String DVD_PATH = "/mnt/iso";
@@ -28,6 +25,11 @@ public class Main {
     public static List<Photo> photos = new ArrayList<>();
 
     public static void main(String[] args) {
+
+        File storage = new File(STORAGE_PATH);
+        Long freeGiB = storage.getUsableSpace()/1024/1024/1024;
+
+        System.out.println("Storage: " + freeGiB + " GiB free");
 
         // Register DVD with the website
 
