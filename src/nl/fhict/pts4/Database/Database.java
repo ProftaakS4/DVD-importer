@@ -11,12 +11,14 @@ import com.mysql.jdbc.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  *
  * @author Vito Corleone
+ * @author Bart
  */
 public class Database {
 
@@ -30,25 +32,39 @@ public class Database {
     // get the databasesingleton instance
     private DatabaseSingleton databaseSingleton = DatabaseSingleton.getInstanceSingleton();
 
-    public Database(String id, String quantity) {
-        this.id = id;
-        this.quantity = quantity;
+    public Database() {
         connection = databaseSingleton.getDatabaseConnection();
-        executeQuery();
     }
 
-    private int newDvd(Integer photographer) {
+    public int newDvd(Integer photographer) {
 
-        String query = "{call newDvd(?)}";
+        String query = "{call insertDVD(?, ?)}";
 
         CallableStatement stmt = null;
+
         try {
             stmt = (CallableStatement) connection.prepareCall(query);
             stmt.setInt(1, photographer);
+            stmt.registerOutParameter(2, Types.INTEGER);
+            stmt.execute();
+            Integer dvdid = stmt.getInt(2);
+            System.out.println("DVD ID = " + dvdid);
 
-        } catch (SQLException e) {
-            System.err.println(ex.getMessage());
+            return dvdid;
+        } catch (SQLException ex) {
+            System.err.println("Database error:" + ex.getMessage());
+            return 0;
         }
+    }
+
+    public int newDirectory() {
+
+
+    }
+
+    public int newPhoto() {
+
+
     }
 
     private void executeQuery() {
@@ -63,14 +79,15 @@ public class Database {
             stmt.setInt(1, Integer.parseInt(id));
 
             // set the procedure output parameter
-            stmt.registerOutParameter(2, java.sql.Types.VARCHAR);
+            stmt.registerOutParameter(2, Types.INTEGER);
 
             // execute the query
             stmt.execute();
 
             // get the output parameter
-            String imagePath = stmt.getString(2);
-            System.out.println("Image ID = " + id + " Imagepath = " + imagePath);
+            String dvdid = stmt.getString(2);
+            System.out.println("DVD ID = " + id);
+
 
         } catch (SQLException ex) {
             System.err.println(ex.getMessage());
