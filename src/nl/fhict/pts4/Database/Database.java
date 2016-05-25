@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,14 +58,43 @@ public class Database {
         }
     }
 
+    private String generateRandomLoginCode(int length){
+        Random rng = new Random();
+        rng.nextInt();
+
+        StringBuilder randStr = new StringBuilder();
+
+        for(int i=0; i<length; i++) {
+
+            char ch;
+            if (rng.nextBoolean()) {
+                // Generate a number
+                ch = (char) (0x30 +rng.nextInt() % 10);
+            }
+            else
+            {
+                // Generate a letter
+                ch = (char) (0x40 +rng.nextInt() % 26);
+            }
+
+            randStr.append(ch);
+
+        }
+        return randStr.toString();
+    }
+
     public int newDirectory() {
 
+        int length = 6;
 
+
+
+        return 0;
     }
 
     public int newPhoto() {
 
-
+        return 0;
     }
 
     private void executeQuery() {
