@@ -21,7 +21,7 @@ public class Photo {
     public static final int THUMBNAIL_WIDTH = 300;
     public static final int THUMBNAIL_HEIGHT = 300;
 
-    Photo(File file) {
+    public Photo(File file) {
         this.file = file;
     }
 
@@ -46,11 +46,11 @@ public class Photo {
         return title;
     }
 
-    private String getPath(){
+    public String getPath(){
         return file.getPath();
     }
 
-    private String getResolution() throws IOException {
+    public String getResolution() throws IOException {
         BufferedImage bimg = ImageIO.read(file);
         int width          = bimg.getWidth();
         int height         = bimg.getHeight();
