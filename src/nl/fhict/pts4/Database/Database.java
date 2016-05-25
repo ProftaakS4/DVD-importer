@@ -8,6 +8,9 @@ package nl.fhict.pts4.Database;
 import com.mysql.jdbc.AbandonedConnectionCleanupThread;
 import com.mysql.jdbc.CallableStatement;
 import com.mysql.jdbc.Connection;
+import nl.fhict.pts4.Photo;
+
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -58,16 +61,19 @@ public class Database {
         }
     }
 
-    private String generateRandomLoginCode(int length){
+    private String generateRandomCode(int length){
+        // Only generate numbers
+        boolean only_numbers = true;
+
         Random rng = new Random();
         rng.nextInt();
 
-        StringBuilder randStr = new StringBuilder();
+        StringBuilder code = new StringBuilder();
 
         for(int i=0; i<length; i++) {
 
             char ch;
-            if (rng.nextBoolean()) {
+            if (rng.nextBoolean() || only_numbers) {
                 // Generate a number
                 ch = (char) (0x30 +rng.nextInt() % 10);
             }
@@ -77,50 +83,92 @@ public class Database {
                 ch = (char) (0x40 +rng.nextInt() % 26);
             }
 
-            randStr.append(ch);
-
+            code.append(ch);
         }
-        return randStr.toString();
+        return code.toString();
     }
 
-    public int newDirectory() {
+    public String newLoginCode(int directory, int photographer)
+    {
+        String code = generateRandomCode(5) + directory;
+        /*
+        INSERT INTO LOGINCODE (ID, MAP_ID, PHOTOGRAPHER_ID)
+        VALUES (p_map_id, p_photographer_id, p_used, p_validUntil);
+        */
 
-        int length = 6;
-
-
-
-        return 0;
-    }
-
-    public int newPhoto() {
-
-        return 0;
-    }
-
-    private void executeQuery() {
-        // the name of the stored procedure 
-        String query = "{call getPhotoPath(?,?)}";
+        String query = "{call insertLoginCode(?,?,?,?)}";
 
         try {
-            // create the statement
             CallableStatement stmt = (CallableStatement) connection.prepareCall(query);
+            stmt.setInt(1, directory);
 
-            // set the first procedure paramater
-            stmt.setInt(1, Integer.parseInt(id));
-
-            // set the procedure output parameter
-            stmt.registerOutParameter(2, Types.INTEGER);
-
-            // execute the query
             stmt.execute();
-
-            // get the output parameter
-            String dvdid = stmt.getString(2);
-            System.out.println("DVD ID = " + id);
-
-
         } catch (SQLException ex) {
             System.err.println(ex.getMessage());
         }
+
+
+    }
+
+    public int newDirectory(int dvdid, String path, boolean isPrivate) {
+
+        String query = "{call insertMap(?,?,?,?)}";
+
+        try {
+            CallableStatement stmt = (CallableStatement) connection.prepareCall(query);
+
+            stmt.setInt(1, dvdid);
+            stmt.setString(2, path);
+
+            if (isPrivate) {
+                stmt.setString(3, "Prive");
+            } else {
+                stmt.setString(3, "Openbaar");
+            }
+
+            // p_mapid
+            stmt.registerOutParameter(4, Types.INTEGER);
+
+            stmt.execute();
+
+            return stmt.getInt(4);
+        } catch (SQLException ex) {
+            System.err.println(ex.getMessage());
+        }
+        return 0;
+    }
+
+    public int newPhoto(int directory, int photographer, Photo photo) throws IOException {
+        String query = "{call insertMap(?,?,?,?,?,?)}";
+
+        // p_photographer_id
+        // map id
+        // image
+        // resolution
+        // description
+
+        String image = photo.getPath();
+        String resolution = photo.getResolution();
+        String description = photo.getTitle();
+
+        try {
+            CallableStatement stmt = (CallableStatement) connection.prepareCall(query);
+
+            stmt.setInt(1, photographer);
+            stmt.setInt(2, directory);
+            stmt.setString(3, image);
+            stmt.setString(4, resolution);
+            stmt.setString(5, description);
+
+            // p_mapid
+            stmt.registerOutParameter(4, Types.INTEGER);
+
+            stmt.execute();
+
+            return stmt.getInt(4);
+        } catch (SQLException ex) {
+            System.err.println(ex.getMessage());
+        }
+        return 0;
     }
 }
