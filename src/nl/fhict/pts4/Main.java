@@ -33,6 +33,7 @@ public class Main {
 
     private static void copyFolder(File source, File target) throws IOException
     {
+        System.out.println("Copying "+ source.getPath() + " -> " + target.getPath());
         if (source.isDirectory())
         {
             if (!target.exists())
@@ -64,7 +65,7 @@ public class Main {
     public static String STORAGE_PATH = "/mnt/sshfs_fileserver/dvd_storage/";
     public static List<Photo> photos = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         File storage = new File(STORAGE_PATH);
         Long freeGiB = storage.getUsableSpace()/1024/1024/1024;
@@ -89,12 +90,6 @@ public class Main {
         Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rw-------");
         FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(perms);
 
-        try {
-            Files.createDirectory(Paths.get(STORAGE_PATH), attr);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         System.out.println(storagefolder);
         System.out.println(storagefolder.canWrite());
 
@@ -109,26 +104,43 @@ public class Main {
             e.printStackTrace();
         }
 
-        File[] files = new File(STORAGE_PATH).listFiles();
+        File[] files = storagefolder.listFiles();
 
-        // Loop through al l files
+        // Loop through all files
         for (File rootfile : files) {
+
+            int publicDirectory = db.newDirectory(dvdid, rootfile.getAbsolutePath(), false);
 
             // If a directory is in the root folder, enter it
             if (rootfile.isDirectory()) {
 
                 // Create a login code
-                System.out.println("Login code for " + rootfile.getName() + ": " + 0);
 
-                db.newDirectory();
+                int directory = db.newDirectory(dvdid, rootfile.getAbsolutePath(), true);
+
+                String logincode = db.newLoginCode(directory, photographerId);
+
+                System.out.println("Login code for " + rootfile.getName() + ": " + logincode);
 
                 for (File folderfile : rootfile.listFiles())
                 {
+                    try {
+                        Photo photo = new Photo(folderfile);
+                        db.newPhoto(directory, photographerId, photo);
+                        photo.getThumbnail();
+                    } catch (IOException e) {
+                        System.err.println("Could not read photo file " + folderfile.getPath());
+                        throw e;
+                    }
+                }
+            } else {
+                try {
+                    Photo photo = new Photo(rootfile);
+                    db.newPhoto(publicDirectory, photographerId, photo);
 
-                    db.newPhoto();
-
-
-                    // put thumbnail on webserver
+                } catch (IOException e) {
+                    System.err.println("Could not read photo file " + rootfile.getPath());
+                    throw e;
                 }
             }
         }
