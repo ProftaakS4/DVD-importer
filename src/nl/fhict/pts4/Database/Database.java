@@ -64,6 +64,7 @@ public class Database {
     private String generateRandomCode(int length){
         // Only generate numbers
         boolean only_numbers = true;
+        boolean only_letters = false;
 
         Random rng = new Random();
         rng.nextInt();
@@ -75,12 +76,12 @@ public class Database {
             char ch;
             if (rng.nextBoolean() || only_numbers) {
                 // Generate a number
-                ch = (char) (0x30 +rng.nextInt() % 10);
+                ch = (char) (0x30 + (Math.abs(rng.nextInt()) % 10));
             }
             else
             {
                 // Generate a letter
-                ch = (char) (0x40 +rng.nextInt() % 26);
+                ch = (char) (0x40  + (Math.abs(rng.nextInt()) % 26));
             }
 
             code.append(ch);
@@ -90,7 +91,7 @@ public class Database {
 
     public String newLoginCode(int directory, int photographer)
     {
-        String code = generateRandomCode(5) + directory;
+        String code = directory + generateRandomCode(5);
         /*
         INSERT INTO LOGINCODE (ID, MAP_ID, PHOTOGRAPHER_ID)
         VALUES (p_map_id, p_photographer_id, p_used, p_validUntil);
@@ -101,13 +102,16 @@ public class Database {
         try {
             CallableStatement stmt = (CallableStatement) connection.prepareCall(query);
             stmt.setInt(1, directory);
+            stmt.setInt(2, photographer);
+            stmt.setBoolean(3, false);
+            stmt.setInt(4, Integer.parseInt(code));
 
             stmt.execute();
         } catch (SQLException ex) {
             System.err.println(ex.getMessage());
         }
 
-
+        return code;
     }
 
     public int newDirectory(int dvdid, String path, boolean isPrivate) {
@@ -139,7 +143,7 @@ public class Database {
     }
 
     public int newPhoto(int directory, int photographer, Photo photo) throws IOException {
-        String query = "{call insertMap(?,?,?,?,?,?)}";
+        String query = "{call insertPhoto(?,?,?,?,?,?)}";
 
         // p_photographer_id
         // map id
@@ -161,11 +165,11 @@ public class Database {
             stmt.setString(5, description);
 
             // p_mapid
-            stmt.registerOutParameter(4, Types.INTEGER);
+            stmt.registerOutParameter(6, Types.INTEGER);
 
             stmt.execute();
 
-            return stmt.getInt(4);
+            return stmt.getInt(6);
         } catch (SQLException ex) {
             System.err.println(ex.getMessage());
         }

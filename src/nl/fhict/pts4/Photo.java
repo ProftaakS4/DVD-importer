@@ -4,6 +4,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.*;
 import com.drew.metadata.iptc.IptcDirectory;
+import sun.awt.image.ToolkitImage;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -39,6 +40,7 @@ public class Photo {
             title = iptc.getString(617);
             if (title == null) { title = iptc.getString(517);}
             if (title == null) { title = iptc.getString(632);}
+            if (title == null) { title = file.getName();}
         } catch (ImageProcessingException e) {
             e.printStackTrace();
         }
@@ -51,7 +53,7 @@ public class Photo {
     }
 
     public String getResolution() throws IOException {
-        BufferedImage bimg = ImageIO.read(file);
+        BufferedImage bimg = ImageIO.read(this.file);
         int width          = bimg.getWidth();
         int height         = bimg.getHeight();
 
@@ -59,16 +61,23 @@ public class Photo {
     }
 
     private void createThumbnail() throws IOException {
-        BufferedImage bimg = ImageIO.read(file);
+        System.out.println("Generating thumbnail for: " + this.getPath());
+        BufferedImage bimg = ImageIO.read(this.file);
 
-        BufferedImage thumb;
-        thumb = (BufferedImage) bimg.getScaledInstance(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, Image.SCALE_SMOOTH);
+        //BufferedImage thumb;
+        ToolkitImage thumb =  (ToolkitImage) bimg.getScaledInstance(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, Image.SCALE_SMOOTH);
+        thumb.getWidth();
+        BufferedImage bthumb = thumb.getBufferedImage();
+
 
         String folder = file.getParent();
-        String[] filename = file.getName().split(".");
+        // String[] filename = file.getName().split(".");
 
-        this.thumbnail = new File(folder + "/thumb_"+filename[0]+".png");
-        ImageIO.write(thumb, "png",this.thumbnail);
+
+        // this.thumbnail = new File(folder + "/thumb_"+filename[0]+".png");
+        String filename = file.getName();
+        this.thumbnail = new File(folder + "/thumb_"+filename+".png");
+        ImageIO.write(bthumb, "png",this.thumbnail);
     }
 
     public File getThumbnail() throws IOException {
