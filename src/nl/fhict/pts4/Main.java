@@ -106,17 +106,17 @@ public class Main {
 
         File[] files = storagefolder.listFiles();
 
+        int publicDirectory = db.newDirectory(dvdid, storagefolder.getCanonicalPath(), false);
+
         // Loop through all files
         for (File rootfile : files) {
-
-            int publicDirectory = db.newDirectory(dvdid, rootfile.getAbsolutePath(), false);
 
             // If a directory is in the root folder, enter it
             if (rootfile.isDirectory()) {
 
                 // Create a login code
 
-                int directory = db.newDirectory(dvdid, rootfile.getAbsolutePath(), true);
+                int directory = db.newDirectory(dvdid, rootfile.getCanonicalPath(), true);
 
                 String logincode = db.newLoginCode(directory, photographerId);
 
